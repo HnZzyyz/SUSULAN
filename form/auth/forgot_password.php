@@ -6,15 +6,33 @@
         exit;
     }
 
-    if(isset($_POST['submit'])) {
+    if (isset($_POST['submit'])) {
         include('../../config/database.php');
-        if($_POST['passwordlama'] == $_POST['password_confirm']) {
-            $password = $_POST['password'];
-            $sql = 'UPDATE admin SET password="' . $password . '" WHERE username="' . $_SESSION['login'] . '"';
-            $connect->query($sql);
-            header('Location: /auth/login.php');
+        $PasswordLama = $_POST['passwordlama'];
+        $passwordBaru = $_POST['passwordbaru'];
+        $VPassword = $_POST['konfirmasipassword'];   
+    
+        $query = "SELECT * FROM admin WHERE password = '$PasswordLama'";
+    
+        $result = $connect->query($query);
+    
+        if (mysqli_num_rows($result) > 0) {
+            if ($passwordBaru == $VPassword) {
+                $query = "UPDATE admin SET password = '$passwordBaru' WHERE password = '$PasswordLama'";
+    
+                $result = $connect->query($query);
+    
+                if ($result) {
+                    header("Location: exit.php");
+                    exit();
+                } else {
+                    $error = "Gagal mengubah password";
+                }
+            } else {
+                $error = "Password Baru dan Validasi Password tidak cocok";
+            }
         } else {
-            header('Location: /form/auth/forgot_password.php');
+            $error = "Password Lama salah";
         }
     }
 ?>
@@ -63,6 +81,9 @@
                                             <input type="password" class="form-control form-control-user" name="passwordbaru" placeholder="Password Baru....">
                                             <input type="password" class="form-control form-control-user" name="konfirmasipassword" placeholder="Konfirmasi Password....">
                                         </div>
+                                        <?php if (isset($error)) : ?>
+                                            <p style="color:red;"><?php echo $error; ?></p>
+                                        <?php endif; ?>
                                         <button type="submit" name="submit" class="btn btn-primary btn-user btn-block">
                                             Reset Password
                                         </button>
